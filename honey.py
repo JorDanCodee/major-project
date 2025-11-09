@@ -7,6 +7,7 @@ from pathlib import Path
 """
 Socket and Threading???
 followed tutorial and learned through https://www.freecodecamp.org/news/build-a-honeypot-with-python/
+Going to go back through and comment it more
 """
 
 LOG_DIR = Path("honeypot_logs")
@@ -59,6 +60,9 @@ class Honeypot:
             print(f"Error handling connection: {e}")
         finally:
             client_socket.close()
+
+    
+
 
 
  
