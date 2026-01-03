@@ -13,7 +13,8 @@ Going to go back through and comment it more
 LOG_DIR = Path("honeypot_logs")
 LOG_DIR.mkdir(exist_ok=True)
 
-
+#Creating a class Honeypot
+#initalizing
 class Honeypot:
     def __init__(self, bind_ip="0.0.0.0", ports=None):
         self.bind_ip = bind_ip
@@ -21,7 +22,7 @@ class Honeypot:
         self.active_connections = {}
         self.log_file = LOG_DIR / f"honeypot_{datetime.datetime.now().strftime('%Y%m%d')}.json"
         """ big jelly"""
-
+    #dictonary
     def log_activity(self, port, remote_ip, data):
         activity = {
             "timestamp": datetime.datetime.now().isoformat(),
@@ -33,7 +34,7 @@ class Honeypot:
         with open(self.log_file, 'a') as f:
             json.dump(activity, f)
             f.write('\n')
-    
+    #dictonary
     def handle_connection(self, client_socket, remote_ip, port):
         
         service_banners = {
@@ -60,9 +61,31 @@ class Honeypot:
             print(f"Error handling connection: {e}")
         finally:
             client_socket.close()
-
     
 
+    def start_listner(self,port):
+        """Start a listner on specified port"""
+        try:
+            server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            server.bind((self.bind_ip, port))
+            server.listen(5)
 
+            print(f"[*] Listening on {self.bind_ip}:{port}")
+
+            while True:
+                client, addr = server.accept()
+                print(f"[*] Accepted connection from {addr[0]}:{addr[1]}")
+
+                #Handle connection in separate thread
+                client_handler = threading.Thread(
+                    target=self.handle_connection,
+                    args=(client,addr[0],port)
+                )
+                client_handler.start()
+        
+        except Exception as e:
+            print(f"Error starting listner on port {port}: {e}")
+
+        
 
  
