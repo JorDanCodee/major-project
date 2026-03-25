@@ -3,11 +3,19 @@ import socket
 import datetime
 import json
 import threading
+import time
 from pathlib import Path
 """
 Socket and Threading???
 followed tutorial and learned through https://www.freecodecamp.org/news/build-a-honeypot-with-python/
 Going to go back through and comment it more
+"""
+
+
+"""
+What does this honeypot do?
+
+This honey pot contains a network listner, logging system, and emulation to interact with attackers.
 """
 
 LOG_DIR = Path("honeypot_logs")
@@ -21,7 +29,11 @@ class Honeypot:
         self.ports = ports or [21,22, 80, 443]
         self.active_connections = {}
         self.log_file = LOG_DIR / f"honeypot_{datetime.datetime.now().strftime('%Y%m%d')}.json"
-        """ big jelly"""
+        #defines the IP address to listen on self.bind_ip as it is set to 0.0.0.0 = all interfaces.
+        #self.ports = ports or [21,22,80,443] sets ports to listen on which is listed FTP, SSH, HTTP and the HTTPS protocols.
+        #self.active_connections = {} sets the variable to an empty dictionary. It stores active connections
+        #self.log_file = LOG_DIR /...       formatted string, defines the log file path using current date.
+    
     #dictonary
     def log_activity(self, port, remote_ip, data):
         activity = {
@@ -29,6 +41,7 @@ class Honeypot:
             "remote_ip": remote_ip,
             "port": port,
             "data": data.decode('utf-8', errors='ignore')
+            #"timestamp": datetime.datetime.now().. 
 
         }
         with open(self.log_file, 'a') as f:
@@ -85,7 +98,31 @@ class Honeypot:
         
         except Exception as e:
             print(f"Error starting listner on port {port}: {e}")
+    
 
+def main():
+    
+    honeypot = Honeypot()
+    
+    #Starts listners for each port in seperate threads
+    for port in honeypot.ports:
+        listener_thread = threading.Thread(
+            target=honeypot.start_listner,
+            args=(port,)
+        )
+        listener_thread.daemon = True
+        listener_thread.start()
+
+        try:
+            # Keep main thread alive
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            print("\n[*] Shutting down honeypot...")
+            sys.exit(0)
+
+if __name__ == "__main__":
+    main()
         
 
  
